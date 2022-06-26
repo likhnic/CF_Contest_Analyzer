@@ -3,9 +3,7 @@ const express = require("express");
 const path = require("path")
 const bodyParser = require("body-parser");
 const app = express();
-const https = require("https");
 const ejsmate = require("ejs-mate");
-const { start } = require("repl");
 const axios = require('axios').default;
 
 app.engine('ejs', ejsmate)
@@ -13,11 +11,10 @@ app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')))
-
+app.use(express.static(path.join(__dirname,'public')))
 
 app.get("/", (req, res) => {
-    res.render("analysis", { display: 0 });
+    res.render("analysis", { display: 0,alert:"" });
 });
 
 class timeProblem // this is used in storing fastest & slowest submission {time, contestID} so that link can be provided to user
@@ -182,30 +179,40 @@ async function getUser(url) {
         const response = await axios.get(url);
         return response
     } catch (error) {
-        console.error(error);
+        throw error
     }
 }
 
 app.post("/", async (req, res) => {
     resetArray();
     let { handle, startDate, endDate } = req.body;
-    startDate = parseInt((new Date(startDate).getTime() / 1000).toFixed(0));
-    endDate = parseInt((new Date(endDate).getTime() / 1000).toFixed(0));
-
-    const url = "https://codeforces.com/api/user.status?handle=" + handle;
-    const ratingUrl = "https://codeforces.com/api/user.rating?handle=" + handle;
-
-    let submissionData = await getUser(url);
-    let result = submissionData.data.result;
-    timeAnalysis(result, startDate, endDate, problems);
-    console.log(problems);
-
-    let ratingData = await getUser(ratingUrl);
-    ratingData = ratingData.data.result
-    generalAnalysis(result, ratingData, startDate, endDate, general)
-    // console.log(general)
-
-    res.render('analysis', { handle, display: 1, problems, general })
+    try {
+        if(startDate>endDate){
+            let temp=startDate;
+            startDate=endDate;
+            endDate=temp;
+        }
+        startDate = parseInt((new Date(startDate).getTime() / 1000).toFixed(0));
+        endDate = parseInt((new Date(endDate).getTime() / 1000).toFixed(0));
+    
+        const url = "https://codeforces.com/api/user.status?handle=" + handle;
+        const ratingUrl = "https://codeforces.com/api/user.rating?handle=" + handle;
+    
+        let submissionData = await getUser(url);
+        let result = submissionData.data.result;
+        timeAnalysis(result, startDate, endDate, problems);
+        console.log(problems);
+    
+        let ratingData = await getUser(ratingUrl);
+        ratingData = ratingData.data.result
+        generalAnalysis(result, ratingData, startDate, endDate, general)
+        // console.log(general)
+    
+        res.render('analysis', { handle, display: 1, problems, general,alert:"" })
+    } catch (error) {
+        let e=error.response.data
+        res.render("analysis", { display: 0, alert:e.comment });
+    }
 })
 
 app.listen(3000, () => {
