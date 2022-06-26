@@ -1,12 +1,22 @@
 <% layout('./boilerplate.ejs')%>
 
+<div class="div">
+  <%if(alert && alert.length!==0){%>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      <strong><%=alert%></strong>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <%}%>
+</div>
+
 <%if(display){%>
   <%const url="https://codeforces.com/contest/"%>
+
     <div class="container">
-      <div class="row">
+      <div class="row row-cols-1 row-cols-md-2 g-4 my-3">
           <%problems.forEach((problem,index)=>{%>
             <%if(problem.cntSubmission){%>
-              <div class="col-sm-6 my-2">
+              <div class="col my-2">
                 <div class="card" style="width: 40rem;">
                   <div class="card-body">
                     <h5 class="card-title">Problem <%=String.fromCharCode(index+65)%></h5>
@@ -31,6 +41,24 @@
                       </div>
                       <div class="col-sm-4">
                         <p class="card-text text-muted">in <a href="<%=url+problem.fastestSubmission.contestID%>"><%=problem.fastestSubmission.contestID%></a></p>
+                      </div>
+                      <div class="col-sm-6">
+                        <p class="card-text">Slowest Submission </p>
+                      </div>
+                      <div class="col-sm-2">
+                        <p class="card-text"><%=problem.slowestSubmission.submitTime%></p>
+                      </div>
+                      <div class="col-sm-4">
+                        <p class="card-text text-muted">in <a href="<%=url+problem.slowestSubmission.contestID%>"><%=problem.slowestSubmission.contestID%></a></p>
+                      </div>
+                      <div class="col-sm-6">
+                        <p class="card-text">Max Rated Problem Solved </p>
+                      </div>
+                      <div class="col-sm-2">
+                        <p class="card-text"><%=problem.maxRatedProblem.rating%></p>
+                      </div>
+                      <div class="col-sm-4">
+                        <p class="card-text text-muted">in <a href="<%=url+problem.maxRatedProblem.contestID%>"><%=problem.maxRatedProblem.contestID%></a></p>
                       </div>
                     </div>
                   </div>
